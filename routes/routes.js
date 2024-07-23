@@ -1,8 +1,9 @@
 import express from 'express';
 import HomeController from '../controllers/HomeController.js';
-const app = express();
-const router = app.Router();
+import UserController from '../controllers/UserController.js';
+const router = express.Router();
 
 router.get('/', HomeController.index);
+router.post('/user', UserController.create);
 
 export default router;

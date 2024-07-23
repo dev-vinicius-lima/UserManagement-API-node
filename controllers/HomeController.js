@@ -4,4 +4,4 @@ class HomeController {
   }
 }
 
-module.exports = new HomeController();
+export default new HomeController();
