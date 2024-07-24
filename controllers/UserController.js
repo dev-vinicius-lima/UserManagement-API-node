@@ -50,5 +50,16 @@ class UserController {
       return res.status(404).json({ message: 'Usário não encontrado!' });
     }
   }
+
+  async remove(req, res) {
+    const { id } = req.body;
+    const result = User.delete(id);
+    if (result.status == 400 || result.status == 404) {
+      return res.status(400).json({ message: result.message });
+    } else {
+      return res.status(200).json({ message: result.message });
+    }
+  }
 }
+
 export default new UserController();

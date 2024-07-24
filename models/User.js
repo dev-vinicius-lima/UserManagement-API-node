@@ -114,6 +114,32 @@ class User {
       };
     }
   }
+
+  async delete(id) {
+    const user = await findById(id);
+    if (user != undefined) {
+      try {
+        await prisma.user.delete({
+          where: { id: id },
+        });
+      } catch (error) {
+        return {
+          status: 400,
+          message: 'Erro ao deletar o usário!',
+        };
+      }
+    } else {
+      return {
+        status: 404,
+        message: 'Usário não encontrado!',
+      };
+    }
+
+    return {
+      status: 200,
+      message: 'Usário deletado com sucesso!',
+    };
+  }
 }
 
 export default new User();
