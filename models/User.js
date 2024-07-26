@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import PasswordToken from './PasswordToken.js';
 
 const prisma = new PrismaClient();
 class User {
@@ -25,6 +26,27 @@ class User {
     try {
       const result = await prisma.user.findUnique({
         where: { id: idInt },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      });
+      if (result !== null) {
+        return result;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async findByEmail(email) {
+    try {
+      const result = await prisma.user.findUnique({
+        where: { email: email },
         select: {
           id: true,
           name: true,
@@ -139,6 +161,29 @@ class User {
       status: 200,
       message: 'Usário deletado com sucesso!',
     };
+  }
+
+  async changePassword(newPassword, id, token) {
+    const salt = bcrypt.genSaltSync(10);
+    const result = await prisma.user.update({
+      where: { id: id },
+      data: {
+        password: bcrypt.hashSync(salt),
+        s,
+      },
+    });
+    if (result) {
+      await PasswordToken.setUsed(token, id);
+      return {
+        status: 200,
+        message: 'Senha alterada com sucesso!',
+      };
+    } else {
+      return {
+        status: 400,
+        message: 'Erro ao alterar a senha!',
+      };
+    }
   }
 }
 

@@ -8,9 +8,18 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  name     String?
-  password String  @db.VarChar(200)
-  role     Int?
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  name           String?
+  password       String          @db.VarChar(200)
+  role           Int?
+  passwordTokens PasswordToken[]
+}
+
+model PasswordToken {
+  id     Int    @id @default(autoincrement())
+  token  String @unique
+  userId Int?
+  used   Int
+  user   User?  @relation(fields: [userId], references: [id])
 }

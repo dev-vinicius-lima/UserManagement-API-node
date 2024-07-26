@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import PasswordToken from '../models/PasswordToken.js';
 class UserController {
   async index(req, res) {
     const users = await User.findAll();
@@ -60,6 +61,31 @@ class UserController {
       return res.status(200).json({ message: result.message });
     }
   }
-}
 
+  async recoverPassword(req, res) {
+    const { email } = req.body;
+    const result = await PasswordToken.create(email);
+    if (result.status == 400 || result.status == 404) {
+      return res.status(400).json({ message: result.message });
+    } else {
+      console.log(result.token);
+      return res.status(200).json({ token: result.token });
+    }
+  }
+
+  async changePassword(req, res) {
+    const { token, password } = req.body;
+    const isTokenValid = await PasswordToken.validate(token);
+    if (isTokenValid.status) {
+      await User.changePassword(
+        password,
+        isTokenValid.token.userId,
+        isTokenValid.token.token,
+      );
+      res.status(200).json({ message: 'Senha alterada com sucesso!' });
+    } else {
+      res.status(400).json({ message: 'Token inválido!' });
+    }
+  }
+}
 export default new UserController();
