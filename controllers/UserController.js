@@ -1,5 +1,9 @@
 import User from '../models/User.js';
 import PasswordToken from '../models/PasswordToken.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+const secret = process.env.SECRET;
 class UserController {
   async index(req, res) {
     const users = await User.findAll();
@@ -17,7 +21,7 @@ class UserController {
   }
 
   async create(req, res) {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Todos os campos obrigatórios!' });
@@ -34,7 +38,7 @@ class UserController {
       return;
     }
 
-    await User.newUser(email, password, name);
+    await User.newUser(email, password, name, role);
     return res.status(201).json({ message: 'Usário criado com sucesso!' });
   }
 
@@ -85,6 +89,28 @@ class UserController {
       res.status(200).json({ message: 'Senha alterada com sucesso!' });
     } else {
       res.status(400).json({ message: 'Token inválido!' });
+    }
+  }
+
+  async login(req, res) {
+    const { email, password } = req.body;
+    try {
+      const user = await User.findByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: 'Usário não encontrado!' });
+      }
+      const result = await bcrypt.compare(password, user.password);
+      if (result === true) {
+        const token = jwt.sign({ email: user.email, role: user.role }, secret, {
+          expiresIn: '1d',
+        });
+        res.status(200).json(token);
+      } else {
+        res.status(400).json({ message: 'Senha inválida!' });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'Erro ao autenticar o usuário!' });
     }
   }
 }

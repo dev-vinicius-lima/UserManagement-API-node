@@ -51,6 +51,7 @@ class User {
           id: true,
           name: true,
           email: true,
+          password: true,
           role: true,
         },
       });
@@ -63,7 +64,7 @@ class User {
       return null;
     }
   }
-  async newUser(email, password, name) {
+  async newUser(email, password, name, role) {
     const salt = bcrypt.genSaltSync(10);
     try {
       await prisma.user.create({
@@ -71,7 +72,7 @@ class User {
           name: name,
           email: email,
           password: bcrypt.hashSync(password, salt),
-          role: 0,
+          role: role,
         },
       });
     } catch (error) {
@@ -79,9 +80,11 @@ class User {
     }
     return this.newUser;
   }
-  async findEmail(email) {
+  async findEmail(email, password) {
     try {
-      const result = await prisma.user.findUnique({ where: { email: email } });
+      const result = await prisma.user.findUnique({
+        where: { email: email, password: password },
+      });
       if (result) {
         return true;
       } else {
